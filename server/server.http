@@ -1,0 +1,115 @@
+@server_HostAddress =  http://localhost:5288
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIwMTE5NmVjZC0zYTU4LTRiOWUtYWNiZC0zMGU3ZjQzOThkYTQiLCJlbWFpbCI6ImNvdXBzQGdtYWlsLmNvbSIsInVuaXF1ZV9uYW1lIjoiU2NvdXBzIiwianRpIjoiZDExZDZjMTQtMzAzMy00NTI5LWE0NGQtZjA0NTE3MGZjYzc5IiwiZXhwIjoxNzc0ODczMDgxLCJpc3MiOiJub3RlbHkiLCJhdWQiOiJub3RlbHktdXNlcnMifQ.7SZNcTf6z-0ahgyx9ec5VdrEPaqIiZgmTO37qpxK59I
+@noteId = 0b926ce9-5f98-40cf-ae99-7796cb5d8028
+@userId = 9f9e7d86-65f5-4fdc-bae8-17d01b33c796
+# @noteId = b0438aaa-f053-4589-b751-ecc2e7d36f38
+
+GET {{server_HostAddress}}/weatherforecast/
+Accept: application/json
+
+# Authentication Endpoints
+# User Registration
+###
+POST {{server_HostAddress}}/api/auth/register
+Content-Type: application/json
+
+{
+  "username": "testuser",
+  "email": "testuser@example.com",
+  "firstName": "Test",
+  "lastName": "User",
+  "password": "Password123!"
+}
+
+# User Login
+###
+POST {{server_HostAddress}}/api/auth/login
+Content-Type: application/json
+
+{
+  "identifier": "Scoups",
+  "password": "Coupsie123_"
+}
+
+
+# Get User Profile
+###
+GET {{server_HostAddress}}/api/user
+Authorization: Bearer {{token}}
+
+#  Update User Profile
+###
+PUT {{server_HostAddress}}/api/user
+Authorization: Bearer {{token}}
+{
+  "firstName": "UpdatedFirstName",
+  "lastName": "UpdatedLastName"
+}
+
+# Notes Endpoints
+# Get All Notes
+###
+GET {{server_HostAddress}}/api/notes
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+# Create a New Note
+###
+POST {{server_HostAddress}}/api/notes
+Authorization: Bearer {{token}}
+Content-Type: application/json
+{
+  "title": "New Note",
+  "synopsis": "This is a synopsis of the new note.",
+  "content": "This is the content of the new note."
+}
+
+# Get a Note by ID
+###
+GET {{server_HostAddress}}/api/notes/{{noteId}}
+Authorization: Bearer {{token}}
+
+# Get notes for a specific user
+###
+GET {{server_HostAddress}}/api/notes/user/{{userId}}
+Authorization: Bearer {{token}}
+
+# Update a Note
+###
+PUT {{server_HostAddress}}/api/notes/{{noteId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "title": "My Updated Title",
+  "synopsis": "My updated synopsis",
+  "content": "My updated content",
+  "isPublic": false
+}
+
+# Deleting a note (soft delete)
+###
+PATCH {{server_HostAddress}}/api/notes/{{noteId}}/delete
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "isDeleted": true
+}
+
+###  Restore the note (if needed)
+PATCH {{server_HostAddress}}/api/notes/{{noteId}}/restore
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "isDeleted": false
+}
+
+### Get all deleted notes for a user
+GET {{server_HostAddress}}/api/notes/user/{{userId}}/trash
+Authorization: Bearer {{token}}
+
+### Update password
+PATCH {{server_HostAddress}}/api/password
+Authorization: Bearer {{token}}

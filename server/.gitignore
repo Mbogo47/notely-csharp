@@ -1,0 +1,24 @@
+.env
+# Build results
+bin/
+obj/
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+
+# VS Code
+.vscode/
+
+# Logs
+*.log
+
+# Environment files
+appsettings.Development.json
+appsettings.Local.json
+.env
+
+# OS files
+.DS_Store
+Thumbs.db
