@@ -56,7 +56,7 @@ namespace server.Controllers
             });
         }
 
-      
+
 
         // Uodate Password Endpoint
         [HttpPatch("password")]
@@ -64,31 +64,32 @@ namespace server.Controllers
         {
             try
             {
-                // 1. Resolve the current user
                 var (appUser, error) = await _currentUser.ResolveAsync(User);
                 if (error != null) return error;
+
+                // Fetch the IdentityUser — ChangePasswordAsync requires it
+                var identityUser = await _userManager.FindByEmailAsync(appUser.EmailAddress);
+                if (identityUser == null)
+                    return NotFound(new { error = "Identity user not found." });
+
                 var result = await _userManager.ChangePasswordAsync(
-                    appUser,
+                    identityUser,
                     changePasswordDto.CurrentPassword,
                     changePasswordDto.NewPassword
                 );
+
                 if (!result.Succeeded)
                 {
-                    return BadRequest(new { error = "Failed to change password." });
-                }
-
-                else
-                {
-                    // Return specific error messages
                     var errors = result.Errors.Select(e => e.Description);
                     return BadRequest(new { errors });
                 }
+
+                return Ok(new { message = "Password changed successfully." });
             }
             catch (Exception ex)
             {
                 return StatusCode(500, new { error = $"An error occurred: {ex.Message}" });
             }
-
         }
 
         // Update User profile endpoint
@@ -131,6 +132,8 @@ namespace server.Controllers
                         // Upload new avatar using your CloudinaryService
                         var avatarUrl = await _cloudinaryService.UploadImageAsync(updateProfileDto.AvatarImage);
                         appUser.AvatarImage = avatarUrl;
+                        _context.Update(appUser);
+await _context.SaveChangesAsync();
                     }
                     catch (Exception ex)
                     {
@@ -141,6 +144,7 @@ namespace server.Controllers
                 // 4. Save changes to the database
                 await _context.SaveChangesAsync();
 
+                Console.WriteLine(updateProfileDto.AvatarImage?.FileName ?? "NULL FILE");
                 // 5. Return updated user data
                 return Ok(new
                 {

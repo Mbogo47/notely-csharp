@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Identity;
 
 namespace Server.Entities;
 
-public class User : IdentityRole<Guid>
+public class User
 {
     [Key]
     public Guid Id { get; set; } = Guid.NewGuid();

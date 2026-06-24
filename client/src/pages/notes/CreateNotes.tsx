@@ -1,5 +1,4 @@
 import { useReducer, useEffect, useState } from "react";
-import axios from "axios";
 import {
   TextField,
   Button,
@@ -8,11 +7,15 @@ import {
   Paper,
   Stack,
   CircularProgress,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from "@mui/material";
 import { toast } from "react-toastify";
 import { marked } from "marked";
 import DOMPurify from "dompurify";
-import { domain } from "../../components/utils/utils";
+import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
 import axiosInstance from "../../services/axiosInstance";
 import {
   createNoteReducer,
@@ -20,15 +23,14 @@ import {
 } from "../../reducers/createNoteReducer";
 
 const CreateNotes: React.FC = () => {
-  const [state, dispatch] = useReducer(
-    createNoteReducer,
-    initialcreateNoteState,
-  );
-  const { title, synopsis, content, notesImage, loading } = state;
+  const [state, dispatch] = useReducer(createNoteReducer, initialcreateNoteState);
+  const { title, synopsis, content, loading, aiGenerating } = state;
 
-  const [isPrivate, setIsPrivate] = useState(false);
-  // const [aiGenerating, setAiGenerating] = useState(false);
   const [previewHtml, setPreviewHtml] = useState("");
+  const [modalOpen, setModalOpen] = useState(false);
+  const [description, setDescription] = useState("");
+
+  const isDisabled = loading || aiGenerating;
 
   useEffect(() => {
     const convertMarkdown = async () => {
@@ -43,85 +45,81 @@ const CreateNotes: React.FC = () => {
         setPreviewHtml("");
       }
     };
-
     convertMarkdown();
   }, [content]);
 
-  // const handleGenerateAI = async () => {
-  //   if (!title || !synopsis) {
-  //     toast.error("Please enter both title and synopsis");
-  //     return;
-  //   }
+  const handleGenerateAI = async () => {
+    if (!description.trim()) {
+      toast.error("Please enter a description first.");
+      return;
+    }
 
-  //   setAiGenerating(true);
-  //   try {
-  //     const token = localStorage.getItem("token");
-
-  //     if (!token) {
-  //       toast.error("User not authenticated.");
-  //       return;
-  //     }
-
-  //     const response = await axios.post(
-  //       `${domain}/generate`,
-  //       { title, synopsis },
-  //       {
-  //         headers: {
-  //           Authorization: `Bearer ${token}`,
-  //         },
-  //       }
-  //     );
-
-  //     dispatch({ type: "SET_CONTENT", payload: response.data.markdown });
-  //     toast.success("AI-generated content loaded.");
-  //   } catch (error: any) {
-  //     console.error(error);
-  //     toast.error(
-  //       error.response?.data?.error || "Failed to generate note content."
-  //     );
-  //   } finally {
-  //     setAiGenerating(false);
-  //   }
-  // };
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const formData = new FormData();
-    formData.append("title", title);
-    formData.append("synopsis", synopsis);
-    formData.append("content", content);
-    if (notesImage) formData.append("notesImage", notesImage);
-
-    dispatch({ type: "SET_LOADING", payload: true });
+    // Close modal immediately, then generate
+    setModalOpen(false);
+    dispatch({ type: "SET_AI_GENERATING", payload: true });
 
     try {
-      const token = localStorage.getItem("token");
+      const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${import.meta.env.VITE_GROQ_API_KEY}`,
+        },
+        body: JSON.stringify({
+          model: "llama-3.3-70b-versatile",
+          messages: [
+            {
+              role: "user",
+              content: `You are a note-writing assistant. Given a description, generate a note with a title, synopsis, and detailed markdown content.
 
-      if (!token) {
-        console.error("No token found in localStorage");
+              Description: ${description}
+
+              Respond ONLY with a JSON object — no markdown fences, no preamble — in this exact shape:
+              {
+                "title": "...",
+                "synopsis": "...",
+                "content": "... (markdown) ..."
+              }`,
+            },
+          ],
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        const reason = data?.error?.message ?? `API error ${response.status}`;
+        toast.error(reason);
         return;
       }
-      const noteData = {
-        title: title.trim(),
-        synopsis: synopsis.trim(),
-        content: content.trim(),
-        isPublic: !isPrivate,
-      };
 
-      console.log("Sending note data:", noteData);
-      // 1. Create the note
-      const res = await axiosInstance.post(`api/notes`, noteData);
+      const raw = data.choices?.[0]?.message?.content ?? "";
+      const clean = raw.replace(/```json|```/g, "").trim();
+      const parsed = JSON.parse(clean);
 
-      const noteId = res.data.noteId || res.data.id;
+      dispatch({ type: "SET_TITLE", payload: parsed.title });
+      dispatch({ type: "SET_SYNOPSIS", payload: parsed.synopsis });
+      dispatch({ type: "SET_CONTENT", payload: parsed.content });
+      toast.success("Note generated!");
+    } catch (err: any) {
+      console.error(err);
+      toast.error("Failed to generate note. Check your API key or try again.");
+    } finally {
+      dispatch({ type: "SET_AI_GENERATING", payload: false });
+      setDescription("");
+    }
+  };
 
-      // 2. Make note private if toggle is on
-      if (isPrivate) {
-        await axiosInstance.patch(`${domain}/notes/public/${noteId}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-      }
-
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    dispatch({ type: "SET_LOADING", payload: true });
+    try {
+      await axiosInstance.post(`api/notes`, {
+        title: state.title,
+        synopsis: state.synopsis,
+        content: state.content,
+        isPublic: state.isPublic,
+      });
       toast.success("Note created successfully!");
       dispatch({ type: "RESET" });
     } catch (err: any) {
@@ -132,109 +130,156 @@ const CreateNotes: React.FC = () => {
   };
 
   return (
-    <Box sx={{ display: "flex", gap: 2, padding: 2 }}>
-      {/* Form Section */}
-      <Paper elevation={3} sx={{ padding: 4, flex: 1, minWidth: "50%" }}>
-        <Typography variant="h5" gutterBottom>
-          Create a Note
-        </Typography>
-
-        <Box component="form" onSubmit={handleSubmit} noValidate>
-          <Stack spacing={2}>
-            <TextField
-              label="Title"
-              value={title}
-              onChange={(e) =>
-                dispatch({ type: "SET_TITLE", payload: e.target.value })
-              }
-              fullWidth
-              required
-              disabled={loading}
-            />
-            <TextField
-              label="Synopsis"
-              value={synopsis}
-              onChange={(e) =>
-                dispatch({ type: "SET_SYNOPSIS", payload: e.target.value })
-              }
-              fullWidth
-              required
-              disabled={loading}
-            />
-            <TextField
-              label="Content"
-              value={content}
-              onChange={(e) =>
-                dispatch({ type: "SET_CONTENT", payload: e.target.value })
-              }
-              fullWidth
-              multiline
-              minRows={6}
-              required
-              disabled={loading}
-            />
-
-            {/* TOGGLES */}
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-              }}
-            >
-              {/* Private toggle */}
-              <Button
-                variant={isPrivate ? "contained" : "outlined"}
-                color="secondary"
-                onClick={() => setIsPrivate(!isPrivate)}
-                disabled={loading}
-              >
-                {isPrivate ? "Private Note" : "Public Note"}
-              </Button>
-
-              {/* AI Generate Button */}
-              {/* <Button
-                variant="outlined"
-                color="success"
-                onClick={handleGenerateAI}
-                disabled={loading || aiGenerating}
-              >
-                {aiGenerating ? "Generating..." : "Generate with AI"}
-              </Button> */}
-            </Box>
-
-            <Button
-              type="submit"
-              variant="contained"
-              color="primary"
-              disabled={loading}
-              startIcon={
-                loading ? <CircularProgress size={20} color="inherit" /> : null
-              }
-            >
-              {loading ? "Creating..." : "Create Note"}
-            </Button>
-          </Stack>
-        </Box>
-      </Paper>
-
-      {/* Preview Section */}
-      {content && (
-        <Paper
-          elevation={3}
-          sx={{
-            padding: 3,
-            flex: 1,
-            minWidth: "50%",
-          }}
-        >
-          <Typography variant="h6" gutterBottom>
-            Preview
+    <>
+      {/* AI Description Modal */}
+      <Dialog
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        maxWidth="sm"
+        fullWidth
+        sx={{ zIndex: 9999 }}
+      >
+        <DialogTitle>Generate with AI</DialogTitle>
+        <DialogContent>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            Describe what your note should be about and AI will generate a
+            title, synopsis, and content for you.
           </Typography>
-          <Box dangerouslySetInnerHTML={{ __html: previewHtml }} />
+          <TextField
+            autoFocus
+            label="Description"
+            placeholder="e.g. A guide on how to use React hooks effectively..."
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            fullWidth
+            multiline
+            minRows={3}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && e.ctrlKey) handleGenerateAI();
+            }}
+          />
+          <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: "block" }}>
+            Tip: Press Ctrl + Enter to generate
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button onClick={() => setModalOpen(false)} color="inherit">
+            Cancel
+          </Button>
+          <Button
+            onClick={handleGenerateAI}
+            variant="contained"
+            color="success"
+            disabled={!description.trim()}
+            startIcon={<AutoAwesomeIcon fontSize="small" />}
+          >
+            Generate
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Box sx={{ display: "flex", gap: 2, padding: 2 }}>
+        {/* Form Section */}
+        <Paper elevation={3} sx={{ padding: 4, flex: 1, minWidth: "50%" }}>
+          <Typography variant="h5" gutterBottom>
+            Create a Note
+          </Typography>
+
+          <Box component="form" onSubmit={handleSubmit} noValidate>
+            <Stack spacing={2}>
+              <TextField
+                label="Title"
+                value={title}
+                onChange={(e) =>
+                  dispatch({ type: "SET_TITLE", payload: e.target.value })
+                }
+                fullWidth
+                required
+                disabled={isDisabled}
+              />
+              <TextField
+                label="Synopsis"
+                value={synopsis}
+                onChange={(e) =>
+                  dispatch({ type: "SET_SYNOPSIS", payload: e.target.value })
+                }
+                fullWidth
+                required
+                disabled={isDisabled}
+              />
+              <TextField
+                label="Content"
+                value={content}
+                onChange={(e) =>
+                  dispatch({ type: "SET_CONTENT", payload: e.target.value })
+                }
+                fullWidth
+                multiline
+                minRows={6}
+                required
+                disabled={isDisabled}
+              />
+
+              {/* TOGGLES */}
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                <Button
+                  variant={state.isPublic ? "contained" : "outlined"}
+                  color="secondary"
+                  disabled={isDisabled}
+                  onClick={() =>
+                    dispatch({ type: "SET_IS_PUBLIC", payload: !state.isPublic })
+                  }
+                >
+                  {state.isPublic ? "Public Note" : "Private Note"}
+                </Button>
+
+                <Button
+                  variant="outlined"
+                  color="success"
+                  onClick={() => setModalOpen(true)}
+                  disabled={isDisabled}
+                  startIcon={
+                    aiGenerating
+                      ? <CircularProgress size={16} color="inherit" />
+                      : <AutoAwesomeIcon fontSize="small" />
+                  }
+                >
+                  {aiGenerating ? "Generating..." : "Generate with AI"}
+                </Button>
+              </Box>
+
+              <Button
+                type="submit"
+                variant="contained"
+                color="primary"
+                disabled={isDisabled}
+                startIcon={
+                  loading ? <CircularProgress size={20} color="inherit" /> : null
+                }
+              >
+                {loading ? "Creating..." : "Create Note"}
+              </Button>
+            </Stack>
+          </Box>
         </Paper>
-      )}
-    </Box>
+
+        {/* Preview Section */}
+        {content && (
+          <Paper elevation={3} sx={{ padding: 3, flex: 1, minWidth: "50%" }}>
+            <Typography variant="h6" gutterBottom>
+              Preview
+            </Typography>
+            <Box dangerouslySetInnerHTML={{ __html: previewHtml }} />
+          </Paper>
+        )}
+      </Box>
+    </>
   );
 };
 

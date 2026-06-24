@@ -2,7 +2,7 @@ export type EditNoteState = {
   title: string;
   synopsis: string;
   content: string;
-  notesImage: File | null;
+  isPublic: boolean;
   loading: boolean;
 };
 
@@ -10,7 +10,7 @@ export type EditNoteAction =
   | { type: "SET_TITLE"; payload: string }
   | { type: "SET_SYNOPSIS"; payload: string }
   | { type: "SET_CONTENT"; payload: string }
-  | { type: "SET_IMAGE"; payload: File | null }
+  | { type: "SET_IS_PUBLIC"; payload: boolean }
   | { type: "SET_LOADING"; payload: boolean }
   | { type: "RESET"; payload?: Partial<EditNoteState> };
 
@@ -18,7 +18,7 @@ export const initialEditNoteState: EditNoteState = {
   title: "",
   synopsis: "",
   content: "",
-  notesImage: null,
+  isPublic: true,
   loading: false,
 };
 
@@ -33,8 +33,9 @@ export function editNoteReducer(
       return { ...state, synopsis: action.payload };
     case "SET_CONTENT":
       return { ...state, content: action.payload };
-    case "SET_IMAGE":
-      return { ...state, notesImage: action.payload };
+    case "SET_IS_PUBLIC":
+      return {
+        ...state, isPublic: action.payload };
     case "SET_LOADING":
       return { ...state, loading: action.payload };
     case "RESET":

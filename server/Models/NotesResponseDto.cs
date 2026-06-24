@@ -10,6 +10,5 @@ public class NoteResponseDto
     public string Content { get; set; }
     public bool IsDeleted { get; set; }
     public bool IsPublic { get; set; }
-    public Guid AuthorId { get; set; }
-    public AuthorDto Author { get; set; } 
+   public PublicAuthorDto Author { get; set; } 
 }

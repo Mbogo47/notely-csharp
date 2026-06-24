@@ -16,7 +16,7 @@ const theme = createTheme({
     },
   },
   typography: {
-    fontFamily: " 'Patrick Hand', cursive",
+    fontFamily: " 'Noto Sans', sans-serif",
   },
   shape: {
     borderRadius: 8,

@@ -12,7 +12,7 @@ using server.Data;
 namespace Server.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260323122807_InitialCreate")]
+    [Migration("20260623162523_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -303,7 +303,7 @@ namespace Server.Migrations
                     b.HasIndex("UserName")
                         .IsUnique();
 
-                    b.ToTable("Users");
+                    b.ToTable("AppUsers");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

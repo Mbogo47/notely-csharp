@@ -12,11 +12,14 @@ Env.Load();
 
 var builder = WebApplication.CreateBuilder(args);
 
+var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
+
 
 // builder.Services.AddOpenApi();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(); 
+builder.Services.AddSwaggerGen();
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
@@ -25,7 +28,7 @@ builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(connect
 var jwtSecret = Environment.GetEnvironmentVariable("JWT_SECRET")
     ?? throw new InvalidOperationException("JWT_SECRET not set in .env");
 
-builder.Services.AddAuthentication(options => 
+builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -56,14 +59,15 @@ builder.Services.AddIdentityApiEndpoints<IdentityUser>()
 
 builder.Services.AddCors(options =>
 {
+    var allowedOrigins = (Environment.GetEnvironmentVariable("CORS_ORIGINS")
+        ?? "http://localhost:5173,https://localhost:5173")
+        .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
     options.AddPolicy("AllowFrontend", policy =>
     {
-       policy.WithOrigins(
-                "http://localhost:5173",
-                "https://localhost:5173"
-              )
-              .AllowAnyHeader()
-              .AllowAnyMethod();
+        policy.WithOrigins(allowedOrigins)
+               .AllowAnyHeader()
+               .AllowAnyMethod();
     });
 });
 
@@ -78,10 +82,10 @@ if (app.Environment.IsDevelopment())
 {
     // app.MapOpenApi();
     app.UseSwagger();
-    app.UseSwaggerUI(); 
+    app.UseSwaggerUI();
 }
 
-app.MapIdentityApi<IdentityUser>(); 
+app.MapIdentityApi<IdentityUser>();
 // app.UseHttpsRedirection();
 app.UseCors("AllowFrontend");
 app.UseAuthentication();

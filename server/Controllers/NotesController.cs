@@ -40,7 +40,7 @@ namespace server.Controllers
             // Get all notes (maybe filter by IsPublic if needed)
             var notes = await _context.Notes
                 .Include(n => n.Author)
-                .Where(n => n.IsDeleted == false)
+                .Where(n => n.IsDeleted == false && n.IsPublic == true)
                 .ToListAsync();
 
             // Map to DTOs
@@ -52,15 +52,9 @@ namespace server.Controllers
                 Content = note.Content,
                 IsDeleted = note.IsDeleted,
                 IsPublic = note.IsPublic,
-                AuthorId = note.AuthorId,
-                Author = new AuthorDto
+                Author = new PublicAuthorDto
                 {
-                    Id = note.Author.Id,
-                    UserName = note.Author.UserName,
-                    FirstName = note.Author.FirstName,
-                    LastName = note.Author.LastName,
-                    EmailAddress = note.Author.EmailAddress,
-                    AvatarImage = note.Author.AvatarImage
+                    UserName = note.Author.UserName
                 }
             }).ToList();
 
@@ -86,15 +80,9 @@ namespace server.Controllers
                 Content = note.Content,
                 Synopsis = note.Synopsis,
                 IsPublic = note.IsPublic,
-                AuthorId = note.AuthorId,
-                Author = new AuthorDto
+                Author = new PublicAuthorDto
                 {
-                    Id = note.Author.Id,
-                    UserName = note.Author.UserName,
-                    FirstName = note.Author.FirstName,
-                    LastName = note.Author.LastName,
-                    EmailAddress = note.Author.EmailAddress,
-                    AvatarImage = note.Author.AvatarImage
+                    UserName = note.Author.UserName
                 }
             };
             return Ok(responseDto);
@@ -119,15 +107,9 @@ namespace server.Controllers
                 Content = note.Content,
                 Synopsis = note.Synopsis,
                 IsPublic = note.IsPublic,
-                AuthorId = note.AuthorId,
-                Author = new AuthorDto
+                Author = new PublicAuthorDto
                 {
-                    Id = note.Author.Id,
-                    UserName = note.Author.UserName,
-                    FirstName = note.Author.FirstName,
-                    LastName = note.Author.LastName,
-                    EmailAddress = note.Author.EmailAddress,
-                    AvatarImage = note.Author.AvatarImage
+                    UserName = note.Author.UserName
                 }
             }).ToList();
             return Ok(noteResponses);
@@ -140,7 +122,7 @@ namespace server.Controllers
             // Check if User is authenticated and resolve their profile
             var (appUser, error) = await _currentUser.ResolveAsync(User);
             if (error != null) return error;
-            
+
 
             var note = new Note
             {
@@ -162,15 +144,9 @@ namespace server.Controllers
                 Content = note.Content,
                 Synopsis = note.Synopsis,
                 IsPublic = note.IsPublic,
-                AuthorId = note.AuthorId,
-                Author = new AuthorDto
+                Author = new PublicAuthorDto
                 {
-                    Id = appUser.Id,
-                    UserName = appUser.UserName,
-                    FirstName = appUser.FirstName,
-                    LastName = appUser.LastName,
-                    EmailAddress = appUser.EmailAddress,
-                    AvatarImage = appUser.AvatarImage
+                    UserName = note.Author.UserName
                 }
             };
 
@@ -252,15 +228,9 @@ namespace server.Controllers
                 Content = note.Content,
                 Synopsis = note.Synopsis,
                 IsPublic = note.IsPublic,
-                AuthorId = note.AuthorId,
-                Author = new AuthorDto
+                Author = new PublicAuthorDto
                 {
-                    Id = note.Author.Id,
-                    UserName = note.Author.UserName,
-                    FirstName = note.Author.FirstName,
-                    LastName = note.Author.LastName,
-                    EmailAddress = note.Author.EmailAddress,
-                    AvatarImage = note.Author.AvatarImage
+                    UserName = note.Author.UserName
                 }
             }).ToList();
 

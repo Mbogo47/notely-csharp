@@ -74,16 +74,16 @@ const Profile = () => {
     formData.append("firstName", profileState.firstName);
     formData.append("lastName", profileState.lastName);
     if (profileState.avatarImage) {
-      formData.append("avatarImage", profileState.avatarImage);
+      formData.append("AvatarImage", profileState.avatarImage);
     }
 
     profileDispatch({ type: "SET_LOADING", payload: true });
 
     try {
-      await axios.put(`${domain}/api/user`, formData, {
+      await axios.put(`${domain}/api/profile`, formData, {
         headers: {
           Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
+          // "Content-Type": "application/json",
         },
       });
       const updatedUserRes = await axios.get(`${domain}/api/user`, {

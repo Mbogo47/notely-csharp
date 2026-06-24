@@ -24,7 +24,7 @@ public class CloudinaryService
         var uploadParams = new ImageUploadParams
         {
             File = new FileDescription(file.FileName, stream),
-            Folder = "notely/avatars",
+            Folder = "notely",
             Transformation = new Transformation()
                 .Width(200).Height(200).Crop("fill").Gravity("face") // ← auto crop to face
         };

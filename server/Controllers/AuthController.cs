@@ -65,7 +65,7 @@ namespace server.controllers
                 EmailAddress = registerDto.Email
             };
 
-            _context.Users.Add(appUser);
+            _context.AppUsers.Add(appUser);
             await _context.SaveChangesAsync();
 
             // 4. Map to DTO and return
@@ -99,8 +99,8 @@ namespace server.controllers
                 return Unauthorized(new { message = "Invalid Password." });
 
             // 3. Find the app user profile
-            var appUser = await _context.Users
-                .FirstOrDefaultAsync(u => u.EmailAddress == user.Email || u.UserName == user.UserName);
+           var appUser = await _context.AppUsers
+    .FirstOrDefaultAsync(u => u.EmailAddress == user.Email || u.UserName == user.UserName);
 
             // 4. Generate token
             var token = _tokenService.GenerateToken(user);

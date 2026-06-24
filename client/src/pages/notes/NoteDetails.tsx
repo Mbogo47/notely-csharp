@@ -144,7 +144,7 @@ const NoteDetails: React.FC = () => {
               "& code": {
                 padding: "0.2rem 0.4rem",
                 borderRadius: "4px",
-                fontFamily: "'Patrick Hand', cursive",
+                fontFamily: " 'Noto Sans', sans-serif",
                 color: theme.palette.primary.dark,
               },
             })}

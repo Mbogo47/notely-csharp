@@ -30,7 +30,7 @@ public class CurrentUserService : ICurrentUserService
         if (identityUser == null)
             return (null, new NotFoundObjectResult(new { message = "User not found." }));
 
-        var appUser = await _context.Users
+        var appUser = await _context.AppUsers
             .FirstOrDefaultAsync(u => u.EmailAddress == identityUser.Email);
 
         if (appUser == null)
