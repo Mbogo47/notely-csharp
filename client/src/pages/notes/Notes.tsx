@@ -10,7 +10,6 @@ import {
   Button,
 } from "@mui/material";
 import { toast } from "react-toastify";
-// import { domain } from "../../components/utils/utils";
 import { Link } from "react-router-dom";
 // import { Grid } from "react-loader-spinner";
 import CustomCardLoader from "../../components/loader/CustomLoader";

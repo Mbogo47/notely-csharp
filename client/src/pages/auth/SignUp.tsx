@@ -10,10 +10,10 @@ import {
   signupReducer,
   initialSignupFormState,
 } from "../../reducers/signUpReducer";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { useReducer } from "react";
 import { toast } from "react-toastify";
+import axiosInstance, { getApiErrorMessage } from "../../services/axiosInstance";
 
 const SignUp = () => {
   const [form, dispatch] = useReducer(signupReducer, initialSignupFormState);
@@ -53,7 +53,7 @@ const SignUp = () => {
     }
 
     try {
-      await axios.post(`${import.meta.env.domain}/api/auth/register`, {
+      await axiosInstance.post("/api/auth/register", {
         firstName,
         lastName,
         email: emailAddress,
@@ -65,8 +65,7 @@ const SignUp = () => {
       toast.success("Signup successful!");
       navigate("/signin");
     } catch (error: any) {
-      const message =
-        error.response?.data?.error || error.message || "Sign Up failed";
+      const message = getApiErrorMessage(error) || "Sign Up failed";
       dispatch({
         type: "SUBMIT_FAILURE",
         error: message,

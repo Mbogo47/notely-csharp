@@ -75,7 +75,7 @@ const EditNote: React.FC = () => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${import.meta.env.GROQ_API_KEY}`,
+          "Authorization": `Bearer ${import.meta.env.VITE_GROQ_API_KEY}`,
         },
         body: JSON.stringify({
           model: "llama-3.3-70b-versatile",
@@ -92,7 +92,7 @@ ${state.content}
 
 What the user wants to add or change: ${description}
 
-Rewrite the full note content in markdown, incorporating the user's requested changes. 
+Rewrite the full note content in markdown, incorporating the user's requested changes.
 Respond ONLY with the updated markdown content — no JSON, no preamble, no explanations.`,
             },
           ],
@@ -194,9 +194,24 @@ Respond ONLY with the updated markdown content — no JSON, no preamble, no expl
         </DialogActions>
       </Dialog>
 
-      <Box sx={{ display: "flex", flexDirection: "row", gap: 2, padding: 2 }}>
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: { xs: "column", md: "row" },
+          gap: 2,
+          padding: { xs: 1, sm: 2 },
+        }}
+      >
         {/* Form Section */}
-        <Paper elevation={3} sx={{ padding: 3, flex: 1, maxWidth: "50%", overflowY: "auto" }}>
+        <Paper
+          elevation={3}
+          sx={{
+            padding: { xs: 2, sm: 3 },
+            flex: 1,
+            minWidth: 0,
+            overflowY: "auto",
+          }}
+        >
           <Typography variant="h5" gutterBottom>
             Edit Note
           </Typography>
@@ -227,7 +242,15 @@ Respond ONLY with the updated markdown content — no JSON, no preamble, no expl
             />
 
             {/* TOGGLES */}
-            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: { xs: "column", sm: "row" },
+                justifyContent: "space-between",
+                alignItems: { xs: "stretch", sm: "center" },
+                gap: 1,
+              }}
+            >
               <Button
                 variant={state.isPublic ? "contained" : "outlined"}
                 disabled={isDisabled}
@@ -265,7 +288,14 @@ Respond ONLY with the updated markdown content — no JSON, no preamble, no expl
 
         {/* Preview Section */}
         {state.content && (
-          <Paper elevation={3} sx={{ padding: 3, flex: 1, maxWidth: "50%" }}>
+          <Paper
+            elevation={3}
+            sx={{
+              padding: { xs: 2, sm: 3 },
+              flex: 1,
+              minWidth: 0,
+            }}
+          >
             <Typography variant="h6" gutterBottom>
               Preview
             </Typography>

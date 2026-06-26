@@ -7,7 +7,6 @@ import {
   CircularProgress,
 } from "@mui/material";
 import { useReducer } from "react";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useDispatch } from "react-redux";
@@ -16,6 +15,7 @@ import {
   loginReducer,
   initialLoginFormState,
 } from "../../reducers/loginReducer";
+import axiosInstance, { getApiErrorMessage } from "../../services/axiosInstance";
 
 const Login: React.FC = () => {
   const [form, dispatch] = useReducer(loginReducer, initialLoginFormState);
@@ -37,7 +37,7 @@ const Login: React.FC = () => {
     const { identifier, password } = form;
 
     try {
-      const res = await axios.post(`${import.meta.env.domain}/api/auth/login`, {
+      const res = await axiosInstance.post("api/auth/login", {
         identifier,
         password,
       });
@@ -55,8 +55,7 @@ const Login: React.FC = () => {
         error: "",
       });
 
-      const message =
-        error.response?.data?.error || error.message || "Login failed";
+      const message = getApiErrorMessage(error) || "Login failed";
       toast.error(message);
     }
   };

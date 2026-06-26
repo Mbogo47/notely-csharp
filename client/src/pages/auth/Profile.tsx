@@ -8,7 +8,6 @@ import {
 } from "@mui/material";
 import { useEffect, useReducer, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
 import { toast } from "react-toastify";
 import {
   profileReducer,
@@ -29,7 +28,7 @@ const Profile = () => {
     queryKey: ["user-profile"],
     queryFn: async () => {
       const token = localStorage.getItem("token");
-      const res = await axios.get(`${import.meta.env.domain}/api/user`, {
+      const res = await axiosInstance.get("/api/user", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -79,13 +78,13 @@ const Profile = () => {
     profileDispatch({ type: "SET_LOADING", payload: true });
 
     try {
-      await axios.put(`${import.meta.env.domain}/api/profile`, formData, {
+      await axiosInstance.put("/api/profile", formData, {
         headers: {
           Authorization: `Bearer ${token}`,
           // "Content-Type": "application/json",
         },
       });
-      const updatedUserRes = await axios.get(`${import.meta.env.domain}/api/user`, {
+      const updatedUserRes = await axiosInstance.get("/api/user", {
         headers: { Authorization: `Bearer ${token}` },
       });
 

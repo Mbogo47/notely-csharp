@@ -16,7 +16,7 @@ import { toast } from "react-toastify";
 import { marked } from "marked";
 import DOMPurify from "dompurify";
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
-import axiosInstance from "../../services/axiosInstance";
+import axiosInstance, { getApiErrorMessage } from "../../services/axiosInstance";
 import {
   createNoteReducer,
   initialcreateNoteState,
@@ -54,7 +54,6 @@ const CreateNotes: React.FC = () => {
       return;
     }
 
-    // Close modal immediately, then generate
     setModalOpen(false);
     dispatch({ type: "SET_AI_GENERATING", payload: true });
 
@@ -63,7 +62,7 @@ const CreateNotes: React.FC = () => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${import.meta.env.GROQ_API_KEY}`,
+          "Authorization": `Bearer ${import.meta.env.VITE_GROQ_API_KEY}`,
         },
         body: JSON.stringify({
           model: "llama-3.3-70b-versatile",
@@ -123,7 +122,7 @@ const CreateNotes: React.FC = () => {
       toast.success("Note created successfully!");
       dispatch({ type: "RESET" });
     } catch (err: any) {
-      toast.error(err.response?.data?.error || "Failed to create note.");
+      toast.error(getApiErrorMessage(err) || "Failed to create note.");
     } finally {
       dispatch({ type: "SET_LOADING", payload: false });
     }
@@ -178,9 +177,23 @@ const CreateNotes: React.FC = () => {
         </DialogActions>
       </Dialog>
 
-      <Box sx={{ display: "flex", gap: 2, padding: 2 }}>
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: { xs: "column", md: "row" },
+          gap: 2,
+          padding: { xs: 1, sm: 2 },
+        }}
+      >
         {/* Form Section */}
-        <Paper elevation={3} sx={{ padding: 4, flex: 1, minWidth: "50%" }}>
+        <Paper
+          elevation={3}
+          sx={{
+            padding: { xs: 2, sm: 4 },
+            flex: 1,
+            minWidth: 0,
+          }}
+        >
           <Typography variant="h5" gutterBottom>
             Create a Note
           </Typography>
@@ -224,8 +237,10 @@ const CreateNotes: React.FC = () => {
               <Box
                 sx={{
                   display: "flex",
+                  flexDirection: { xs: "column", sm: "row" },
                   justifyContent: "space-between",
-                  alignItems: "center",
+                  alignItems: { xs: "stretch", sm: "center" },
+                  gap: 1,
                 }}
               >
                 <Button
@@ -269,9 +284,16 @@ const CreateNotes: React.FC = () => {
           </Box>
         </Paper>
 
-        {/* Preview Section */}
+        {/* Preview Section — below form on mobile */}
         {content && (
-          <Paper elevation={3} sx={{ padding: 3, flex: 1, minWidth: "50%" }}>
+          <Paper
+            elevation={3}
+            sx={{
+              padding: { xs: 2, sm: 3 },
+              flex: 1,
+              minWidth: 0,
+            }}
+          >
             <Typography variant="h6" gutterBottom>
               Preview
             </Typography>
