@@ -238,5 +238,48 @@ namespace server.Controllers
         }
 
 
+        // Count of all public non-deleted notes
+        [HttpGet("notes/count")]
+        public async Task<IActionResult> GetNoteCount()
+        {
+            var (appUser, error) = await _currentUser.ResolveAsync(User);
+            if (error != null) return error;
+
+            var count = await _context.Notes
+                .Where(n => n.IsDeleted == false && n.IsPublic == true)
+                .CountAsync();
+
+            return Ok(new { count });
+        }
+
+        // Count of current user's non-deleted notes
+        [HttpGet("notes/mine/count")]
+        public async Task<IActionResult> GetMyNoteCount()
+        {
+            var (appUser, error) = await _currentUser.ResolveAsync(User);
+            if (error != null) return error;
+
+            var count = await _context.Notes
+                .Where(n => n.AuthorId == appUser.Id && n.IsDeleted == false)
+                .CountAsync();
+
+            return Ok(new { count });
+        }
+
+        // Count of current user's deleted notes
+        [HttpGet("notes/deleted/count")]
+        public async Task<IActionResult> GetDeletedNoteCount()
+        {
+            var (appUser, error) = await _currentUser.ResolveAsync(User);
+            if (error != null) return error;
+
+            var count = await _context.Notes
+                .Where(n => n.AuthorId == appUser.Id && n.IsDeleted == true)
+                .CountAsync();
+
+            return Ok(new { count });
+        }
+
+
     }
 }

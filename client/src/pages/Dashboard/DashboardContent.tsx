@@ -4,40 +4,21 @@ import DescriptionIcon from "@mui/icons-material/Description";
 import NoteAddIcon from "@mui/icons-material/NoteAdd";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
-import { domain } from "../../components/utils/utils";
 import CustomCardLoader from "../../components/loader/CustomLoader";
+import axiosInstance from "../../services/axiosInstance";
 
 const fetchNoteCount = async () => {
-  const token = localStorage.getItem("token");
-
-  const res = await axios.get(`${domain}/notes/count`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
+  const res = await axiosInstance.get("/api/notes/count");
   return res.data.count;
 };
 
 const fetchMyNoteCount = async () => {
-  const token = localStorage.getItem("token");
-
-  const res = await axios.get(`${domain}/mynotes/count`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
+  const res = await axiosInstance.get("/api/notes/mine/count");
   return res.data.count;
 };
 
 const fetchDeletedNoteCount = async () => {
-  const token = localStorage.getItem("token");
-
-  const res = await axios.get(`${domain}/delnotes/count`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
+  const res = await axiosInstance.get("/api/notes/deleted/count");
   return res.data.count;
 };
 
@@ -81,15 +62,12 @@ const DashboardContent = () => {
     queryFn: fetchMyNoteCount,
   });
 
-  const { data: deletedNoteCount = 0, isLoading: isLoadingDeletedNote } =
-    useQuery({
-      queryKey: ["deletedNoteCount"],
-      queryFn: fetchDeletedNoteCount,
-    });
+  const { data: deletedNoteCount = 0, isLoading: isLoadingDeletedNote } = useQuery({
+    queryKey: ["deletedNoteCount"],
+    queryFn: fetchDeletedNoteCount,
+  });
 
-  const isLoading = isLoadingNote || isLoadingMyNote || isLoadingDeletedNote;
-
-  if (isLoading) {
+  if (isLoadingNote || isLoadingMyNote || isLoadingDeletedNote) {
     return <CustomCardLoader />;
   }
 

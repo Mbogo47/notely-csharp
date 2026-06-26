@@ -1,4 +1,3 @@
-import axios from "axios";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Container,
@@ -15,7 +14,6 @@ import {
   DeleteOutlineRounded,
 } from "@mui/icons-material";
 import { toast } from "react-toastify";
-import { domain } from "../../components/utils/utils";
 import { Link } from "react-router-dom";
 // import { Grid } from "react-loader-spinner";
 import CustomCardLoader from "../../components/loader/CustomLoader";

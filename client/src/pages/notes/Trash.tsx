@@ -1,4 +1,3 @@
-import axios from "axios";
 import { useQuery } from "@tanstack/react-query";
 import {
   Container,
@@ -12,7 +11,6 @@ import {
 } from "@mui/material";
 import { RestoreFromTrash } from "@mui/icons-material";
 import { toast } from "react-toastify";
-import { domain } from "../../components/utils/utils";
 import { Link } from "react-router-dom";
 import { Grid } from "react-loader-spinner";
 import axiosInstance from "../../services/axiosInstance";
@@ -33,7 +31,6 @@ interface Note {
 
 const Trash: React.FC = () => {
   const fetchDeletedNotes = async () => {
-    const token = localStorage.getItem("token");
     const userId = localStorage.getItem("userId");
     const res = await axiosInstance.get(`api/notes/user/${userId}/trash`);
 
