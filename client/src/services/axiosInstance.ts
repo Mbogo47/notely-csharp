@@ -1,10 +1,10 @@
 import axios from "axios";
 import store  from "../store/store";
 import { logout } from "../store/authSlice";
-import { domain } from "../components/utils/utils";
+
 
 const axiosInstance = axios.create({
-  baseURL: domain,
+  baseURL: import.meta.env.domain,
   headers: {
     "Content-Type": "application/json",
   },

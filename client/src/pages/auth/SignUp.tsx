@@ -13,7 +13,6 @@ import {
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { useReducer } from "react";
-import { domain } from "../../components/utils/utils";
 import { toast } from "react-toastify";
 
 const SignUp = () => {
@@ -54,7 +53,7 @@ const SignUp = () => {
     }
 
     try {
-      await axios.post(`${domain}/api/auth/register`, {
+      await axios.post(`${import.meta.env.domain}/api/auth/register`, {
         firstName,
         lastName,
         email: emailAddress,

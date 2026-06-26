@@ -11,7 +11,6 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useDispatch } from "react-redux";
-import { domain } from "../../components/utils/utils";
 import { loginSuccess } from "../../store/authSlice";
 import {
   loginReducer,
@@ -38,7 +37,7 @@ const Login: React.FC = () => {
     const { identifier, password } = form;
 
     try {
-      const res = await axios.post(`${domain}/api/auth/login`, {
+      const res = await axios.post(`${import.meta.env.domain}/api/auth/login`, {
         identifier,
         password,
       });

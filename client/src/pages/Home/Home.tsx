@@ -57,8 +57,8 @@ const Home = () => {
             loop
             cursor
             cursorStyle="|"
-            typeSpeed={50}
-            deleteSpeed={40}
+            typeSpeed={250}
+            deleteSpeed={100}
             delaySpeed={2000}
           />
         </Typography>
@@ -80,6 +80,7 @@ const Home = () => {
               borderColor: "secondary.main",
             },
           }}
+          // onClick=()
         >
           Start Writing
         </Button>

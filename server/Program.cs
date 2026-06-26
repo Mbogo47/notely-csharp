@@ -86,6 +86,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.MapIdentityApi<IdentityUser>();
+app.MapGet("/health", () => Results.Ok(new { status = "healthy" }));
 // app.UseHttpsRedirection();
 app.UseCors("AllowFrontend");
 app.UseAuthentication();
