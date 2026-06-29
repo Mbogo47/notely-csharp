@@ -81,7 +81,7 @@ const Profile = () => {
       await axiosInstance.put("/api/profile", formData, {
         headers: {
           Authorization: `Bearer ${token}`,
-          // "Content-Type": "application/json",
+          "Content-Type": undefined,
         },
       });
       const updatedUserRes = await axiosInstance.get("/api/user", {

@@ -18,22 +18,33 @@ public class CloudinaryService
     }
 
     public async Task<string> UploadImageAsync(IFormFile file)
+{
+    Console.WriteLine($"File received: {file?.FileName}, Size: {file?.Length}, ContentType: {file?.ContentType}");
+    
+    if (file == null || file.Length == 0)
+        throw new Exception("File is null or empty before upload");
+
+    using var stream = new MemoryStream();
+    await file.CopyToAsync(stream);
+    stream.Position = 0;
+
+    Console.WriteLine($"Stream length after copy: {stream.Length}");
+
+    var uploadParams = new ImageUploadParams
     {
-        using var stream = file.OpenReadStream();
+        File = new FileDescription(file.FileName, stream),
+        Folder = "notely",
+        Transformation = new Transformation()
+            .Width(200).Height(200).Crop("fill").Gravity("face")
+    };
 
-        var uploadParams = new ImageUploadParams
-        {
-            File = new FileDescription(file.FileName, stream),
-            Folder = "notely",
-            Transformation = new Transformation()
-                .Width(200).Height(200).Crop("fill").Gravity("face") // ← auto crop to face
-        };
+    var result = await _cloudinary.UploadAsync(uploadParams);
 
-        var result = await _cloudinary.UploadAsync(uploadParams);
+    Console.WriteLine($"Cloudinary result error: {result.Error?.Message ?? "none"}");
 
-        if (result.Error != null)
-            throw new Exception(result.Error.Message);
+    if (result.Error != null)
+        throw new Exception(result.Error.Message);
 
-        return result.SecureUrl.ToString();
-    }
+    return result.SecureUrl.ToString();
+}
 }
