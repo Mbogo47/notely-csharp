@@ -57,7 +57,7 @@ const Trash: React.FC = () => {
 
     try {
       await axiosInstance.patch(
-        `api/notes/${id}/restore`,
+        `/api/notes/${id}/restore`,
         { isDeleted: false },
       
       );

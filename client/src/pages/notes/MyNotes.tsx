@@ -71,7 +71,7 @@ const MyNotes: React.FC = () => {
 
     try {
       await axiosInstance.patch(
-        `api/notes/${id}/delete`,
+        `/api/notes/${id}/delete`,
         { isDeleted: true },
       );
 

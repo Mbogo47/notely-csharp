@@ -113,7 +113,7 @@ const CreateNotes: React.FC = () => {
     e.preventDefault();
     dispatch({ type: "SET_LOADING", payload: true });
     try {
-      await axiosInstance.post(`api/notes`, {
+      await axiosInstance.post(`/api/notes`, {
         title: state.title,
         synopsis: state.synopsis,
         content: state.content,
